@@ -3,7 +3,10 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"reflect"
+	"regexp"
+	"strings"
 
 	"github.com/sk1t0n/currency_exchange_rate/config"
 	"github.com/valyala/fasthttp"
@@ -206,25 +209,37 @@ type ConversionRates struct {
 	ZMW float32
 }
 
-func CurrencyRates(currency string) map[string]float32 {
-	url := config.URL + currency
-	data, err := getBytesByUrl(url)
+func CurrencyRates(currency string) (map[string]float32, error) {
+	re, _ := regexp.Compile("^[A-Za-z]{3}$")
+	match := re.FindString(currency)
+	if match == "" {
+		return nil, errors.New("invalid currency")
+	}
 
-	if err != nil {
-		panic(err)
+	url := config.URL + strings.ToUpper(currency)
+	data, err := getBytesByUrl(url)
+	if err != nil || len(data) == 0 {
+		return nil, errors.New("failed to load data")
 	}
 
 	var response APIResponse
 	err = json.Unmarshal(data, &response)
-
 	if err != nil {
-		panic(err)
+		return nil, errors.New("failed to parse json data")
 	}
 
 	v := reflect.ValueOf(response.ConversionRates)
 	result := make(map[string]float32, v.NumField())
+	zeros := 0
 	for i := 0; i < v.NumField(); i++ {
-		result[v.Type().Field(i).Name] = v.Field(i).Interface().(float32)
+		currency := v.Field(i).Interface().(float32)
+		result[v.Type().Field(i).Name] = currency
+		if currency == 0 {
+			zeros++
+		}
 	}
-	return result
+	if zeros == v.NumField() {
+		return nil, errors.New("invalid currency")
+	}
+	return result, nil
 }

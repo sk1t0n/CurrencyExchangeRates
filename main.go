@@ -7,8 +7,8 @@ import (
 )
 
 func main() {
-	currency := "USD"
-	rates := api.CurrencyRates(currency)
+	currency := "usd"
+	rates, _ := api.CurrencyRates(currency)
 
 	for k, v := range rates {
 		fmt.Printf("k: %s\tv: %f\n", k, v)
