@@ -15,7 +15,7 @@ export CURRENCY_EXCHANGE_RATES_TOKEN=<website token exchangerate-api.com>
 
 ```sh
 go get
-go build -o CurrencyExchangeRates  main.go
+go build -o CurrencyExchangeRates main.go
 ```
 
 ## Usage
