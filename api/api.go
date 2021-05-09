@@ -6,9 +6,10 @@ import (
 	"errors"
 	"reflect"
 	"regexp"
+	"sort"
 	"strings"
 
-	"github.com/sk1t0n/currency_exchange_rate/config"
+	"github.com/sk1t0n/CurrencyExchangeRates/config"
 	"github.com/valyala/fasthttp"
 )
 
@@ -209,7 +210,30 @@ type ConversionRates struct {
 	ZMW float32
 }
 
+func CurrencyNames() []string {
+	rates := ConversionRates{}
+	v := reflect.ValueOf(rates)
+	names := make([]string, v.NumField())
+	for i := 0; i < v.NumField(); i++ {
+		names[i] = v.Type().Field(i).Name
+	}
+	sort.Strings(names)
+	return names
+}
+
+func checkToken() bool {
+	result := true
+	if config.Token == "" {
+		result = false
+	}
+	return result
+}
+
 func CurrencyRates(currency string) (map[string]float32, error) {
+	if !checkToken() {
+		return nil, errors.New("environment variable CURRENCY_EXCHANGE_RATES_TOKEN is not set")
+	}
+
 	re, _ := regexp.Compile("^[A-Za-z]{3}$")
 	match := re.FindString(currency)
 	if match == "" {

@@ -3,7 +3,7 @@ package api
 import (
 	"testing"
 
-	"github.com/sk1t0n/currency_exchange_rate/config"
+	"github.com/sk1t0n/CurrencyExchangeRates/config"
 )
 
 func TestGetBytesByUrl(t *testing.T) {
